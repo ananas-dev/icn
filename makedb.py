@@ -1,8 +1,31 @@
 from dbfread import DBF
 import sqlite3
+from urllib.request import urlopen
+from io import BytesIO
+from zipfile import ZipFile
+import shutil
+import os
+
+FRBE_FILESERVER_URL = "https://www.frbe-kbsb.be/sites/manager/ICN/22-23/"
+
+
+def download_and_unzip(url, extract_to="."):
+    http_response = urlopen(url)
+    zipfile = ZipFile(BytesIO(http_response.read()))
+    zipfile.extractall(path=extract_to)
+
+
+def mkdirp(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 
 def main():
+    mkdirp("tmp")
+
+    download_and_unzip(FRBE_FILESERVER_URL + "IntNat.zip", "tmp")
+    download_and_unzip(FRBE_FILESERVER_URL + "Datas.zip", "tmp")
+
     conn = sqlite3.connect("icn.sqlite")
     cur = conn.cursor()
 
@@ -59,7 +82,7 @@ def main():
 
     conn.commit()
 
-    for record in DBF("IntNat/PrtIvICN.DBF"):
+    for record in DBF("tmp/PrtIvICN.DBF"):
         team_name = record["EQUIPE_J"]
         team_division = record["DIVISION"]
         team_series = record["SERIE"]
@@ -77,7 +100,7 @@ def main():
 
     conn.commit()
 
-    for record in DBF("IntNat/LstForce.DBF"):
+    for record in DBF("tmp/LstForce.DBF"):
         player_id = record["MATRICULE"]
         player_name = record["NOM_PRENOM"]
         player_elo = record["ELO_ICN"]
@@ -91,12 +114,13 @@ def main():
             team_id = cur.fetchall()[0][0]
 
         player = (player_id, player_name, player_elo, club_id, team_id)
+        player_fts = (player_id, player_name)
         cur.execute(
             "INSERT OR IGNORE INTO players VALUES (?, ?, ?, ?, ?)", player)
 
     conn.commit()
 
-    for record in DBF("Datas/Part24L.DBF"):
+    for record in DBF("tmp/Part24L.DBF"):
         game_round = record["RONDE"]
         game_date = record["DATE"]
         game_board = record["TABLEAU"]
@@ -132,6 +156,9 @@ def main():
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)""", game)
 
     conn.commit()
+
+    # Clear directory
+    shutil.rmtree("tmp")
 
 
 if __name__ == "__main__":

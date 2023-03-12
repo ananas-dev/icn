@@ -1,7 +1,68 @@
-<html>
-  <h1>
-    {{.name}}
-  </h1>
-  {{.elo}}
-  {{.clubId}}
-</html>
+{{ template "head.tmpl" }}
+
+<div class="container">
+  <ul class="collection with-header">
+    <li class="collection-header">
+      <h4>
+        {{.Player.Name }}
+      </h4>
+    </li>
+    <li class="collection-item"><b>Elo:</b> {{ .Player.Elo }}</li>
+    <li class="collection-item"><b>Club:</b> {{ .Player.ClubID }}</li>
+  </ul>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Ronde</th>
+        <th>Tableau</th>
+        <th>Équipe</th>
+        <th>Nom, Prénom</th>
+        <th>Elo</th>
+        <th>Res.</th>
+        <th>Équipe</th>
+        <th>Nom, Prenom</th>
+        <th>Elo</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{
+        range.Games
+      }}
+      <tr>
+        <td>{{ .Round }}</td>
+        <td>{{ .Board }}</td>
+        <td>
+          <a class="link" href="/team/{{ .White.TeamID }}">
+            {{ .White.TeamName }}
+          </a>
+        </td>
+        <td>
+          <a class="link" href="/player/{{ .White.ID }}">
+            {{ .White.Name }}
+          </a>
+        </td>
+        <td>
+          {{ .White.Elo }}
+        </td>
+        <td>{{ .Result }}</td>
+        <td>
+          <a class="link" href="/team/{{ .Black.TeamID }}">
+            {{ .Black.TeamName }}
+          </a>
+        </td>
+        <td>
+          <a class="link" href="/player/{{ .Black.ID }}">
+            {{ .Black.Name }}
+          </a>
+        </td>
+        <td>
+          {{ .Black.Elo }}
+        </td>
+      </tr>
+      {{
+        end
+      }}
+    </tbody>
+  </table>
+</div>
