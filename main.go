@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -151,14 +152,27 @@ func gamesById(id int) ([]Game, error) {
 }
 
 func searchPlayer(query string) ([]PlayerLite, error) {
-	rows, err := DB.Query(fmt.Sprintf(`
-	SELECT p.player_id, p.player_name
-	FROM players AS p
-	INNER JOIN players_fts AS fts
-	ON p.player_id = fts.player_id
-	WHERE players_fts MATCH "*%v*"
-	LIMIT 5
-	`, query))
+	tokens := strings.Fields(query)
+
+	var rows *sql.Rows
+	var err error
+
+	if len(tokens) == 1 {
+		rows, err = DB.Query(`
+		SELECT player_id, player_name
+		FROM players
+		WHERE player_name LIKE $1
+		LIMIT 5
+		`, "%"+tokens[0]+"%")
+	} else if len(tokens) <= 2 {
+		rows, err = DB.Query(`
+		SELECT player_id, player_name
+		FROM players
+		WHERE player_name LIKE $1 AND player_name LIKE $2
+		LIMIT 5
+		`, "%"+tokens[0]+"%", "%"+tokens[1]+"%")
+	}
+
 	if err != nil {
 		return nil, err
 	}

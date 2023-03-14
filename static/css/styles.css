@@ -69,3 +69,8 @@
 .link:active {
   text-decoration: underline;
 }
+
+.search-results {
+  width: 14em;
+  min-height: 2em;
+}
