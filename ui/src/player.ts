@@ -89,4 +89,9 @@ const autocomplete = (term: string) =>
       )
     : (vnode = patch(vnode, view([])));
 
-vnode = patch(toVNode(document.querySelector(".search-container")!), view([]));
+window.addEventListener("DOMContentLoaded", () => {
+  vnode = patch(
+    toVNode(document.querySelector(".search-container")!),
+    view([])
+  );
+});
